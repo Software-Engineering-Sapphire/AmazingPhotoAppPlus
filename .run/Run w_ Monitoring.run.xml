@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run w/ Monitoring" type="CompoundRunConfigurationType">
+    <toRun name="monitor webServer.js" type="NodeJSConfigurationType" />
+    <toRun name="build:w" type="js.build_tools.npm" />
+    <method v="2" />
+  </configuration>
+</component>
