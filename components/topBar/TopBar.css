@@ -1,0 +1,7 @@
+.topbar-appBar {
+  height: 60px;
+}
+
+.topbar-toolbar {
+  justify-content: space-between;
+}

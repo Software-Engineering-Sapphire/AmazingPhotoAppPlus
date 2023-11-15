@@ -1,0 +1,16 @@
+.borderBox{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid;
+    font-size: larger;
+    padding: 10px;
+}
+
+.borderBox img{
+    width: 100%;
+}
+
+.link{
+    font-weight: bolder;
+    text-decoration: none;
+}
