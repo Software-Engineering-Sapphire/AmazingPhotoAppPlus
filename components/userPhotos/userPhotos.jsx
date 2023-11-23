@@ -1,5 +1,6 @@
 import React from 'react';
-import {Button, Typography} from '@mui/material';
+import {Button, Fab, Typography} from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import './userPhotos.css';
 import {Link} from "react-router-dom";
 import axios from 'axios';
@@ -8,7 +9,7 @@ class UserPhotos extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            photos: null,
+            photos: null
         };
     }
 
@@ -34,8 +35,7 @@ class UserPhotos extends React.Component {
 
     // Handle comment submission
     handleCommentSubmit = (photoId, newComment) => {
-        axios
-            .post('/commentsOfPhoto/' + photoId, {comment: newComment})
+        axios.post('/commentsOfPhoto/' + photoId, {comment: newComment})
             .then(() => {
                 this.fetchDataFromAPI();
             })
@@ -43,6 +43,16 @@ class UserPhotos extends React.Component {
                 console.error(err);
             });
     };
+
+    handleFavorite(photoId){
+        axios.post('/favorite/' + photoId)
+            .then(() => {
+                this.fetchDataFromAPI();
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }
 
     render() {
         const {photos} = this.state;
@@ -61,7 +71,15 @@ class UserPhotos extends React.Component {
                             return (
                                 <div key={index}>
                                     <div className="borderBox">
-                                        <p>{photo.date_time}</p>
+                                        <div className="inline">
+                                            <p>{photo.date_time}</p>
+                                            <Fab size="small" aria-label="like" variant={"extended"}
+                                                 disabled={photo.favorite_by.includes(this.props.user._id)}
+                                                 onClick={() => this.handleFavorite(photo._id)}>
+                                                {photo.favorite_by.includes(this.props.user._id) && "FAVORITED"}
+                                                <FavoriteIcon />
+                                            </Fab>
+                                        </div>
                                         <img src={"../../images/" + photo.file_name}
                                              alt={`User ${this.props.match.params.userId}`}/>
                                     </div>

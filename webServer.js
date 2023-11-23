@@ -56,8 +56,7 @@ const passwordFxns = require('./password');
 
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1/project6", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+    useNewUrlParser: true, useUnifiedTopology: true,
 });
 
 // (http://expressjs.com/en/starter/static-files.html) do all
@@ -109,7 +108,6 @@ app.get("/test/:p1", function (request, response) {
                 }
 
                 // We got the object - return it in JSON format.
-                console.log("SchemaInfo", info[0]);
                 response.end(JSON.stringify(info[0]));
             });
         } else if (param === "counts") {
@@ -117,41 +115,30 @@ app.get("/test/:p1", function (request, response) {
             // async call to each collection. That is tricky to do so we use the async
             // package do the work. We put the collections into array and use async.each
             // to do each .count() query.
-            const collections = [
-                {
-                    name: "user",
-                    collection: User
-                },
-                {
-                    name: "photo",
-                    collection: Photo
-                },
-                {
-                    name: "schemaInfo",
-                    collection: SchemaInfo
-                },
-            ];
-            async.each(
-                collections,
-                function (col, done_callback) {
-                    col.collection.countDocuments({}, function (err, count) {
-                        col.count = count;
-                        done_callback(err);
-                    });
-                },
-                function (err) {
-                    if (err) {
-                        response.status(500)
-                            .send(JSON.stringify(err));
-                    } else {
-                        const obj = {};
-                        for (let i = 0; i < collections.length; i++) {
-                            obj[collections[i].name] = collections[i].count;
-                        }
-                        response.end(JSON.stringify(obj));
+            const collections = [{
+                name: "user", collection: User
+            }, {
+                name: "photo", collection: Photo
+            }, {
+                name: "schemaInfo", collection: SchemaInfo
+            },];
+            async.each(collections, function (col, done_callback) {
+                col.collection.countDocuments({}, function (err, count) {
+                    col.count = count;
+                    done_callback(err);
+                });
+            }, function (err) {
+                if (err) {
+                    response.status(500)
+                        .send(JSON.stringify(err));
+                } else {
+                    const obj = {};
+                    for (let i = 0; i < collections.length; i++) {
+                        obj[collections[i].name] = collections[i].count;
                     }
+                    response.end(JSON.stringify(obj));
                 }
-            );
+            });
         } else {
             // If we know understand the parameter we return a (Bad Parameter) (400)
             // status.
@@ -169,9 +156,7 @@ app.get("/test/:p1", function (request, response) {
 app.get("/user/list", function (request, response) {
     if (request.session.login_name) {
         User.find({}, {
-            _id: 1,
-            first_name: 1,
-            last_name: 1
+            _id: 1, first_name: 1, last_name: 1
         }, function (err, users) {
             if (err) {
                 console.error("Error in /user/list", err);
@@ -244,66 +229,47 @@ app.get("/photosOfUser/:id", function (request, response) {
             response.status(400).send();
         }
 
-        Photo.aggregate([
-            {
-                $match:
-                    {user_id: {$eq: mongoTargetObj}}
-            },
-            {
-                $addFields: {
-                    comments: {$ifNull: ["$comments", []]}
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "comments.user_id",
-                    foreignField: "_id",
-                    as: "users"
-                }
-            },
-            {
-                $addFields: {
-                    comments: {
-                        $map: {
-                            input: "$comments",
-                            in: {
-                                $mergeObjects: [
-                                    "$$this",
-                                    {
-                                        user: {
-                                            $arrayElemAt: [
-                                                "$users",
-                                                {
-                                                    $indexOfArray: [
-                                                        "$users._id",
-                                                        "$$this.user_id"
-                                                    ]
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ]
-                            }
+        Photo.aggregate([{
+            $match: {user_id: {$eq: mongoTargetObj}}
+        }, {
+            $addFields: {
+                comments: {$ifNull: ["$comments", []]}
+            }
+        }, {
+            $lookup: {
+                from: "users", localField: "comments.user_id", foreignField: "_id", as: "users"
+            }
+        }, {
+            $addFields: {
+                comments: {
+                    $map: {
+                        input: "$comments",
+                        in: {
+                            $mergeObjects: ["$$this", {
+                                user: {
+                                    $arrayElemAt: ["$users", {
+                                        $indexOfArray: ["$users._id", "$$this.user_id"]
+                                    }]
+                                }
+                            }]
                         }
                     }
                 }
-            },
-            {
-                $project: {
-                    users: 0,
-                    __v: 0,
-                    "comments.__v": 0,
-                    "comments.user_id": 0,
-                    "comments.user.login_name": 0,
-                    "comments.user.password": 0,
-                    "comments.user.location": 0,
-                    "comments.user.description": 0,
-                    "comments.user.occupation": 0,
-                    "comments.user.__v": 0
-                }
             }
-        ], function (err, photos) {
+        }, {
+            $project: {
+                users: 0,
+                __v: 0,
+                "comments.__v": 0,
+                "comments.user_id": 0,
+                "comments.user.login_name": 0,
+                "comments.user.password": 0,
+                "comments.user.location": 0,
+                "comments.user.description": 0,
+                "comments.user.occupation": 0,
+                "comments.user.__v": 0
+            }
+        }], function (err, photos) {
             if (err) {
                 console.error("Error in /photosOfUser/:id", err);
                 response.status(500)
@@ -335,25 +301,21 @@ app.get("/commentsOfUser/:id", function (request, response) {
             response.status(400).send();
         }
 
-        Photo.aggregate([
-            {
-                $unwind: "$comments",
+        Photo.aggregate([{
+            $unwind: "$comments",
+        }, {
+            $project: {
+                _id: "$comments._id",
+                user_id: "$comments.user_id",
+                photo_name: "$file_name",
+                date_time: "$comments.date_time",
+                text: "$comments.comment",
             },
-            {
-                $project: {
-                    _id: "$comments._id",
-                    user_id: "$comments.user_id",
-                    photo_name: "$file_name",
-                    date_time: "$comments.date_time",
-                    text: "$comments.comment",
-                },
+        }, {
+            $match: {
+                user_id: mongoTargetObj
             },
-            {
-                $match: {
-                    user_id: mongoTargetObj
-                },
-            }
-        ], function (err, comments) {
+        }], function (err, comments) {
             if (err) {
                 console.error("Error in /commentsOfUser/:id", err);
                 response.status(500)
@@ -377,13 +339,11 @@ app.get("/commentsOfUser/:id", function (request, response) {
  */
 app.post("/admin/login", (request, response) => {
     const {login_name, password} = request.body;
-    User.aggregate([
-        {
-            $match: {
-                login_name: login_name
-            }
-        },
-        // {
+    User.aggregate([{
+        $match: {
+            login_name: login_name
+        }
+    }, // {
         //     $match: {
         //         password: password
         //     }
@@ -393,14 +353,12 @@ app.post("/admin/login", (request, response) => {
         if (user && passwordFxns.doesPasswordMatch(user.password.hash, user.password.salt, password)) {
             request.session.login_name = login_name;
             request.session.user_id = user._id;
-            console.log(request.data);
             response.status(200).json({message: "Successful Login", user: user, _id: user._id});
         } else {
             response.status(400).json({message: "Invalid Login Information"});
         }
     });
 });
-
 
 /**
  * User /admin/logout - Clears Current Session
@@ -413,7 +371,6 @@ app.post("/admin/logout", (request, response) => {
         response.status(400).json({message: "No User Logged In"});
     }
 });
-
 
 app.post("/user", (request, response) => {
     const {first_name, last_name, location, description, occupation, login_name, password} = request.body;
@@ -448,13 +405,7 @@ app.post("/user", (request, response) => {
         } else {
             // Create a new user
             const newUser = new User({
-                first_name,
-                last_name,
-                location,
-                description,
-                occupation,
-                login_name,
-                password
+                first_name, last_name, location, description, occupation, login_name, password
             });
 
             newUser.save((errUser, user) => {
@@ -473,34 +424,28 @@ app.post("/user", (request, response) => {
 });
 
 app.post('/commentsOfPhoto/:photo_id', function (request, response) {
-        if (request.session.login_name) {
-            const timestamp = new Date().valueOf();
-            const id = new mongoose.Types.ObjectId(request.params.photo_id);
-            const commentInput = request.body.comment;
-            const commentBody = {
-                comment: commentInput,
-                date_time: timestamp,
-                user_id: request.session.user_id
-            };
-            Photo.findById({
-                _id: id
-            }).then(
-                (photo) => {
-                    photo.comments = photo.comments.concat(commentBody);
-                    photo.save((err) => {
-                        if (err) {
-                            console.error('/commentsOfPhoto/:photoId', err);
-                            response.status(400).json({message: "Comment Upload Failed"});
-                            return;
-                        }
-                        response.status(200).json({message: "Comment Upload Success"});
-                    });
+    if (request.session.login_name) {
+        const timestamp = new Date().valueOf();
+        const id = new mongoose.Types.ObjectId(request.params.photo_id);
+        const commentInput = request.body.comment;
+        const commentBody = {
+            comment: commentInput, date_time: timestamp, user_id: request.session.user_id
+        };
+        Photo.findById({
+            _id: id
+        }).then((photo) => {
+            photo.comments = photo.comments.concat(commentBody);
+            photo.save((err) => {
+                if (err) {
+                    console.error('/commentsOfPhoto/:photoId', err);
+                    response.status(400).json({message: "Comment Upload Failed"});
+                    return;
                 }
-            );
-        }
+                response.status(200).json({message: "Comment Upload Success"});
+            });
+        });
     }
-);
-
+});
 
 app.post("/photos/new", (request, response) => {
     if (request.session.login_name) {
@@ -529,32 +474,92 @@ app.post("/photos/new", (request, response) => {
                     return;
                 }
                 const newPhoto = new Photo({
-                    file_name: filename,
-                    date_time: timestamp,
-                    user_id: request.session.user_id
+                    file_name: filename, date_time: timestamp, user_id: request.session.user_id
 
                 });
                 newPhoto.save((errPhoto) => {
-                        if (errPhoto) {
-                            console.error("Error in /photos/new", errPhoto);
-                            response.status(400).json({message: "Photo Upload Failed"});
-                            return;
-                        }
-                        response.status(200).json({message: "Photo Upload Success"});
+                    if (errPhoto) {
+                        console.error("Error in /photos/new", errPhoto);
+                        response.status(400).json({message: "Photo Upload Failed"});
+                        return;
                     }
-                );
+                    response.status(200).json({message: "Photo Upload Success"});
+                });
             });
         });
     }
 });
 
+app.post("/favorite/:photo_id", (request, response) => {
+    if (request.session.login_name) {
+        const id = new mongoose.Types.ObjectId(request.params.photo_id);
+
+        Photo.findById({
+            _id: id
+        }).then((photo) => {
+            photo.favorite_by.push(request.session.user_id);
+            photo.save((err) => {
+                if (err) {
+                    console.error('/favorite/:photo_id', err);
+                    response.status(400).json({message: "Failed to Favorite Photo"});
+                    return;
+                }
+                response.status(200).json({message: "Photo Favorited"});
+            });
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
+
+app.delete("/favorite/:photo_id", (request, response) => {
+    if (request.session.login_name) {
+        const id = new mongoose.Types.ObjectId(request.params.photo_id);
+        Photo.findById({
+            _id: id
+        }).then((photo) => {
+            photo.favorite_by = photo.favorite_by.filter(item => item.toString() !== request.session.user_id.toString());
+            photo.save((err) => {
+                if (err) {
+                    response.status(404).json({message: "Failed to find Photo"});
+                    return;
+                }
+                response.status(204).send();
+            });
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
+
+app.get("/favorites", (request, response) => {
+    if (request.session.login_name) {
+        let mongoTargetObj;
+        try {
+            mongoTargetObj = new mongoose.Types.ObjectId(request.session.user_id);
+        } catch (e) {
+            response.status(400).send();
+        }
+
+        Photo.aggregate([{
+            $match: {
+                favorite_by: mongoTargetObj
+            }
+        }], function (err, photos) {
+            if (err) {
+                console.error("Error in /favorites", err);
+                response.status(500).send(JSON.stringify(err));
+                return;
+            }
+            response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
+
 const server = app.listen(3000, function () {
     const port = server.address().port;
-    console.log(
-        "Listening at http://localhost:" +
-        port +
-        " exporting the directory " +
-        __dirname
-    );
+    console.log("Listening at http://localhost:" + port + " exporting the directory " + __dirname);
 });
 

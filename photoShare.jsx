@@ -4,8 +4,9 @@ import {
     HashRouter, Route, Switch
 } from 'react-router-dom';
 import {
-    Grid, Paper,
+    Fab, Grid, Paper,
 } from '@mui/material';
+import FavoriteIcon from "@mui/icons-material/Favorite";
 import './styles/main.css';
 
 import {Redirect} from "react-router";
@@ -18,6 +19,7 @@ import UserList from './components/userList/userList';
 import UserPhotos from './components/userPhotos/userPhotos';
 import UserComments from './components/userComments/userComments';
 import LoginRegister from "./components/loginRegister/LoginRegister";
+import UserFavorites from "./components/userFavorites/userFavorites";
 
 class PhotoShare extends React.Component {
     constructor(props) {
@@ -25,7 +27,8 @@ class PhotoShare extends React.Component {
         this.state = {
             topBarStatus: "Please Login",
             advancedFeatures: false,
-            userIsLoggedIn: false
+            userIsLoggedIn: false,
+            user: undefined
         };
         this.toggleAdvancedFeatures = this.toggleAdvancedFeatures.bind(this);
         this.updateLoggedInUser = this.updateLoggedInUser.bind(this);
@@ -39,16 +42,14 @@ class PhotoShare extends React.Component {
         if (user == null) {
             axios.post("/admin/logout").then(
                 () => {
-                    this.setState({userIsLoggedIn: false});
-                    this.setState({topBarStatus: "Please Login"});
+                    this.setState({userIsLoggedIn: false, topBarStatus: "Please Login", user: undefined});
             }).catch(
                 (err) => {
                     console.log(err);
                 }
             );
         } else {
-            this.setState({userIsLoggedIn: true});
-            this.setState({topBarStatus: "Hi, " + user.first_name});
+            this.setState({userIsLoggedIn: true, topBarStatus: "Hi, " + user.first_name, user: user});
         }
     };
 
@@ -68,9 +69,18 @@ class PhotoShare extends React.Component {
                         </Grid>
                         <div className="main-topbar-buffer"/>
                         <Grid item sm={3}>
-                            <Paper className="main-grid-item">
-                                {userIsLoggedIn && <UserList advancedFeatures={this.state.advancedFeatures}/>}
-                            </Paper>
+                            {
+                                userIsLoggedIn &&  (
+                                    <Paper className="main-grid-item">
+                                        <Fab size="small" aria-label="like" variant="extended" color="primary"
+                                             href={'#/favorites'}>
+                                            <FavoriteIcon sx={{marginRight: "10px"}}/>
+                                            {"Your Favorite"}
+                                        </Fab>
+                                        <UserList advancedFeatures={this.state.advancedFeatures}/>
+                                    </Paper>
+                                )
+                            }
                         </Grid>
                         <Grid item sm={9}>
                             <Paper className="main-grid-item">
@@ -102,7 +112,8 @@ class PhotoShare extends React.Component {
                                            render={props => (userIsLoggedIn ?
                                                    (
                                                        <UserPhotos {...props}
-                                                           advancedFeatures={this.state.advancedFeatures}/>
+                                                           advancedFeatures={this.state.advancedFeatures}
+                                                           user={this.state.user}/>
                                                    ) :
                                                    <Redirect to={"/login-register"}/>
                                            )}/>
@@ -116,6 +127,14 @@ class PhotoShare extends React.Component {
                                            )}
                                     />
                                     <Route path="/users" component={UserList}/>
+
+                                    <Route path="/favorites"
+                                           render={props => (
+                                               userIsLoggedIn ?
+                                                   <UserFavorites {...props}/> :
+                                                   <Redirect to={"/login-register"}/>
+                                           )}
+                                    />
 
                                     <Redirect from='*' to='/' />
                                 </Switch>
