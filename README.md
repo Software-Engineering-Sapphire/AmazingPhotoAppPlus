@@ -4,6 +4,7 @@
 
 - userComments/ (extra credit proj 6)
 - password.js (extra credit proj 7)
+- userFavorites/ (final project)
 
 ## Project Roles
 
