@@ -146,7 +146,7 @@ Promise.all(removePromises)
         const recentEvents = models.activityEventModel();
         recentEvents.map(function (userPost) {
             return ActivityEvent.create({
-                date_time: userPost.date_time, type: "photo", photo_filename: userPost.file_name, user: null
+                date_time: userPost.date_time, type: "photo", photo_filename: userPost.file_name, user: "System"
             })
                 .then(function (postEvent) {
                     // Set the unique ID of the object. We use the MongoDB generated _id
