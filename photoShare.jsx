@@ -7,6 +7,7 @@ import {
     Fab, Grid, Paper,
 } from '@mui/material';
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import './styles/main.css';
 
 import {Redirect} from "react-router";
@@ -20,6 +21,7 @@ import UserPhotos from './components/userPhotos/userPhotos';
 import UserComments from './components/userComments/userComments';
 import LoginRegister from "./components/loginRegister/LoginRegister";
 import UserFavorites from "./components/userFavorites/userFavorites";
+import ActivityLog from "./components/activityLog/ActivityLog";
 
 class PhotoShare extends React.Component {
     constructor(props) {
@@ -76,6 +78,10 @@ class PhotoShare extends React.Component {
                                              href={'#/favorites'}>
                                             <FavoriteIcon sx={{marginRight: "10px"}}/>
                                             {"Your Favorites"}
+                                        </Fab>
+                                        <Fab size="small" variant="extended" href={'#/activity'}>
+                                            <TrendingUpIcon/>
+                                            {"Activity"}
                                         </Fab>
                                         <UserList advancedFeatures={this.state.advancedFeatures}/>
                                     </Paper>
@@ -136,6 +142,12 @@ class PhotoShare extends React.Component {
                                            )}
                                     />
 
+                                    <Route path="/activity"
+                                           render={() => (
+                                               userIsLoggedIn ? <ActivityLog/> :
+                                               <Redirect to={"/login-register"}/>
+                                           )}
+                                    />
                                     <Redirect from='*' to='/' />
                                 </Switch>
                             </Paper>

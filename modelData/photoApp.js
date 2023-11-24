@@ -225,12 +225,18 @@
       return schemaInfo;
    };
 
+   // var actionsModel = function() {
+   //    let allObjects = [...photos, ...comments];
+   //    let recentPosts = allObjects.sort((a, b) => b.date_time - a.date_time).slice(0,3);
+   // };
+
    var models =  {
       userListModel: userListModel,
       userModel: userModel,
       photoOfUserModel: photoOfUserModel,
       schemaInfo: schemaModel,
-      userComments: userComments
+      userComments: userComments,
+      // actionLog: actionsModel
    };
 
    if( typeof exports !== 'undefined' ) {

@@ -51,8 +51,16 @@ const app = express();
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
+const ActivityEvent = require("./schema/activityEvent.js");
 // Import password hashing functions
 const passwordFxns = require('./password');
+
+function logEvent(type, photo_filename = null, user = null) {
+    let event = new ActivityEvent({
+        type: type, photo_filename: photo_filename, user: user
+    });
+    event.save();
+}
 
 mongoose.set("strictQuery", false);
 mongoose.connect("mongodb://127.0.0.1/project6", {
@@ -343,16 +351,13 @@ app.post("/admin/login", (request, response) => {
         $match: {
             login_name: login_name
         }
-    }, // {
-        //     $match: {
-        //         password: password
-        //     }
-        // }
+    },
     ], function (err, users) {
         const user = users[0];
         if (user && passwordFxns.doesPasswordMatch(user.password.hash, user.password.salt, password)) {
             request.session.login_name = login_name;
             request.session.user_id = user._id;
+            logEvent("login");
             response.status(200).json({message: "Successful Login", user: user, _id: user._id});
         } else {
             response.status(400).json({message: "Invalid Login Information"});
@@ -366,12 +371,16 @@ app.post("/admin/login", (request, response) => {
 app.post("/admin/logout", (request, response) => {
     if (request.session.login_name) {
         request.session.destroy();
+        logEvent("logout");
         response.status(200).json({message: "Logout Successful"});
     } else {
         response.status(400).json({message: "No User Logged In"});
     }
 });
 
+/**
+ * Post to /user - Registers a new user
+ */
 app.post("/user", (request, response) => {
     const {first_name, last_name, location, description, occupation, login_name, password} = request.body;
     // Check if any of the required fields are empty
@@ -416,13 +425,16 @@ app.post("/user", (request, response) => {
                 }
 
                 request.session.login_name = login_name;
-
+                logEvent("register");
                 response.status(200).json({message: "Registration successful", user, login_name});
             });
         }
     });
 });
 
+/**
+ * Post to /commentsOfPhoto/:photo_id - Adds a comment to a photo
+ */
 app.post('/commentsOfPhoto/:photo_id', function (request, response) {
     if (request.session.login_name) {
         const timestamp = new Date().valueOf();
@@ -441,12 +453,16 @@ app.post('/commentsOfPhoto/:photo_id', function (request, response) {
                     response.status(400).json({message: "Comment Upload Failed"});
                     return;
                 }
+                logEvent("comment", photo.file_name, request.session.login_name);
                 response.status(200).json({message: "Comment Upload Success"});
             });
         });
     }
 });
 
+/**
+*  Post to /photos/new - Adds a new photo
+*/
 app.post("/photos/new", (request, response) => {
     if (request.session.login_name) {
 
@@ -483,6 +499,7 @@ app.post("/photos/new", (request, response) => {
                         response.status(400).json({message: "Photo Upload Failed"});
                         return;
                     }
+                    logEvent("photo", filename, request.session.login_name);
                     response.status(200).json({message: "Photo Upload Success"});
                 });
             });
@@ -552,6 +569,25 @@ app.get("/favorites", (request, response) => {
                 return;
             }
             response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
+
+// Serve 5 most recent activities
+app.get("/activity", (request, response) => {
+    if (request.session.login_name) {
+        ActivityEvent.aggregate([
+            { $sort: { date_time: -1 } },
+            { $limit: 5 }
+        ], function (err, activityEvents) {
+            if (err) {
+                console.error("Error in /activity", err);
+                response.status(500).send(JSON.stringify(err));
+                return;
+            }
+            response.end(JSON.stringify(activityEvents));
         });
     } else {
         response.status(401).json({message: "No User Logged In"});
