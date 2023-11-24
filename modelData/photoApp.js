@@ -225,10 +225,9 @@
       return schemaInfo;
    };
 
-   // var actionsModel = function() {
-   //    let allObjects = [...photos, ...comments];
-   //    let recentPosts = allObjects.sort((a, b) => b.date_time - a.date_time).slice(0,3);
-   // };
+   var activityEventModel = function() {
+      return [...photos].sort((a, b) => b.date_time - a.date_time).slice(0,4);
+   };
 
    var models =  {
       userListModel: userListModel,
@@ -236,7 +235,7 @@
       photoOfUserModel: photoOfUserModel,
       schemaInfo: schemaModel,
       userComments: userComments,
-      // actionLog: actionsModel
+      activityEventModel: activityEventModel,
    };
 
    if( typeof exports !== 'undefined' ) {

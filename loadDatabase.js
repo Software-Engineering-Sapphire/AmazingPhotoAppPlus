@@ -25,9 +25,10 @@ const password = require('./password');
 // Get the magic models we used in the previous projects.
 const models = require("./modelData/photoApp.js").models;
 
-// Load the Mongoose schema for Use and Photo
+// Load the Mongoose schema for User and Photo
 const User = require("./schema/user.js");
 const Photo = require("./schema/photo.js");
+const ActivityEvent = require("./schema/activityEvent.js");
 const SchemaInfo = require("./schema/schemaInfo.js");
 
 const versionString = "1.0";
@@ -37,6 +38,7 @@ const removePromises = [
     User.deleteMany({}),
     Photo.deleteMany({}),
     SchemaInfo.deleteMany({}),
+    ActivityEvent.deleteMany({}),
 ];
 
 Promise.all(removePromises)
@@ -141,6 +143,22 @@ Promise.all(removePromises)
                             });
                     });
             });
+        const recentEvents = models.activityEventModel();
+        const activityEventPromises = recentEvents.map(function (userPost) {
+            return ActivityEvent.create({
+                date_time: userPost.date_time, type: "photo", photo_filename: userPost.file_name, user: null
+            })
+                .then(function (postEvent) {
+                    // Set the unique ID of the object. We use the MongoDB generated _id
+                    // for now but we keep it distinct from the MongoDB ID so we can go to
+                    // something prettier in the future since these show up in URLs, etc.
+                    postEvent.save();
+                    console.log("Added event for photo with filename "+postEvent.photo_filename);
+                })
+                .catch(function (err) {
+                    console.error("Error creating event", err);
+                });
+        });
 
         allPromises.then(function () {
             mongoose.disconnect();
