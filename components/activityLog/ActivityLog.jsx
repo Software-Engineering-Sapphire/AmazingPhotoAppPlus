@@ -1,7 +1,7 @@
 import React from 'react';
 import './ActivityLog.css';
 import axios from 'axios';
-import {Button, List, ListItem, Typography} from "@mui/material";
+import {List, ListItem, Typography} from "@mui/material";
 
 class ActivityLog extends React.Component {
     constructor(props) {
