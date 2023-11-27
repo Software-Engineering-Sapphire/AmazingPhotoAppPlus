@@ -225,17 +225,12 @@
       return schemaInfo;
    };
 
-   var activityEventModel = function() {
-      return [...photos].sort((a, b) => b.date_time - a.date_time).slice(0,4);
-   };
-
    var models =  {
       userListModel: userListModel,
       userModel: userModel,
       photoOfUserModel: photoOfUserModel,
       schemaInfo: schemaModel,
       userComments: userComments,
-      activityEventModel: activityEventModel,
    };
 
    if( typeof exports !== 'undefined' ) {

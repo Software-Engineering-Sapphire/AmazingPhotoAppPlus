@@ -143,22 +143,6 @@ Promise.all(removePromises)
                             });
                     });
             });
-        const recentEvents = models.activityEventModel();
-        recentEvents.map(function (userPost) {
-            return ActivityEvent.create({
-                date_time: userPost.date_time, type: "photo", photo_filename: userPost.file_name, user: "System"
-            })
-                .then(function (postEvent) {
-                    // Set the unique ID of the object. We use the MongoDB generated _id
-                    // for now but we keep it distinct from the MongoDB ID so we can go to
-                    // something prettier in the future since these show up in URLs, etc.
-                    postEvent.save();
-                    console.log("Added event for photo with filename "+postEvent.photo_filename);
-                })
-                .catch(function (err) {
-                    console.error("Error creating event", err);
-                });
-        });
 
         allPromises.then(function () {
             mongoose.disconnect();
