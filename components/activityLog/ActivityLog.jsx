@@ -33,7 +33,7 @@ class ActivityLog extends React.Component {
 
     render() {
         const {actions} = this.state;
-        if (actions === null) {
+        if (actions === null || actions.length === 0) {
             return <Typography>Nothing has happened recently...</Typography>
         } else {
             return <>
@@ -75,6 +75,13 @@ class ActivityLog extends React.Component {
                             }
                         </ListItem>
                     ))}
+                    {actions.length < 5 &&
+                        <ListItem>
+                            <Typography>
+                                Nothing else has happened recently...
+                            </Typography>
+                        </ListItem>
+                    }
                 </List>
             </>
         }
