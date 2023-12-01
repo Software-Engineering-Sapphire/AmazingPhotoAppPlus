@@ -34,56 +34,62 @@ class ActivityLog extends React.Component {
     render() {
         const {actions} = this.state;
         if (actions === null || actions.length === 0) {
-            return <Typography>Nothing has happened recently...</Typography>
+            return <Typography>Nothing has happened recently...</Typography>;
         } else {
-            return <>
-                <List>
-                    {actions.map((event, index) => (
-                        <ListItem key={index}>
-                            {event.type === "login" &&
-                                <Typography>
-                                    {Date(event.date_time).slice(0,21)} - A user logged in!
-                                </Typography>
-                            }
-                            {event.type === "logout" &&
-                                <Typography>
-                                    {Date(event.date_time).slice(0,21)} - A user logged out!
-                                </Typography>
-                            }
-                            {event.type === "register" &&
-                                <Typography>
-                                    {Date(event.date_time).slice(0,21)} - A new user registered!
-                                </Typography>
-                            }
-                            {event.type === "comment" &&
-                                <>
-                                    <img src={"../../images/"+event.photo_filename}
-                                         className="comment-image" alt="comment image preview"/>
-                                    <Typography>
-                                        {Date(event.date_time).slice(0,21)} - {event.user} posted a new comment!
-                                    </Typography>
-                                </>
-                            }
-                            {event.type === "photo" &&
-                                <>
-                                    <img src={"../../images/"+event.photo_filename}
-                                         className="photo-image" alt="comment image preview"/>
-                                    <Typography>
-                                        {Date(event.date_time).slice(0,21)} - {event.user === null ? "Someone" : event.user} posted a new photo!
-                                    </Typography>
-                                </>
-                            }
-                        </ListItem>
-                    ))}
-                    {actions.length < 5 &&
-                        <ListItem>
+            return (
+<List>
+                {actions.map((event, index) => (
+                    <ListItem key={index}>
+                        {event.type === "login" && (
                             <Typography>
-                                Nothing else has happened recently...
+                                {Date(event.date_time)
+                                    .slice(0, 21)} - A user logged in!
                             </Typography>
-                        </ListItem>
-                    }
-                </List>
-            </>
+                          )}
+                        {event.type === "logout" && (
+                            <Typography>
+                                {Date(event.date_time)
+                                    .slice(0, 21)} - A user logged out!
+                            </Typography>
+                          )}
+                        {event.type === "register" && (
+                            <Typography>
+                                {Date(event.date_time)
+                                    .slice(0, 21)} - A new user registered!
+                            </Typography>
+                          )}
+                        {event.type === "comment" && (
+                            <>
+                                <img src={"../../images/" + event.photo_filename}
+                                     className="comment-image" alt="comment preview"/>
+                                <Typography>
+                                    {Date(event.date_time)
+                                        .slice(0, 21)} - {event.user} posted a new comment!
+                                </Typography>
+                            </>
+                          )}
+                        {event.type === "photo" && (
+                            <>
+                                <img src={"../../images/" + event.photo_filename}
+                                     className="photo-image" alt="post preview"/>
+                                <Typography>
+                                    {Date(event.date_time)
+                                        .slice(0, 21)} - {event.user === null ? "Someone" : event.user} posted a new
+                                    photo!
+                                </Typography>
+                            </>
+                          )}
+                    </ListItem>
+                ))}
+                {actions.length < 5 && (
+                    <ListItem>
+                        <Typography>
+                            Nothing else has happened recently...
+                        </Typography>
+                    </ListItem>
+                  )}
+</List>
+);
         }
     }
 }
