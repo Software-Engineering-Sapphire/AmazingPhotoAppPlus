@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, Fab, Typography} from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import './userPhotos.css';
 import {Link} from "react-router-dom";
 import axios from 'axios';
@@ -9,7 +10,7 @@ class UserPhotos extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            photos: null
+            photos: null,
         };
     }
 
@@ -53,6 +54,28 @@ class UserPhotos extends React.Component {
                 console.error(err);
             });
     }
+    handleLikes(photoId, liked){
+        if(liked){
+            axios.delete("/like/" + photoId)
+            .then(() =>
+            {
+                this.fetchDataFromAPI();
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+        }
+        else{
+            axios.post("/like/" + photoId)
+                .then(() =>
+                {
+                    this.fetchDataFromAPI();
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
+        }
+    }
 
     render() {
         const {photos} = this.state;
@@ -68,6 +91,9 @@ class UserPhotos extends React.Component {
                     </div>
                     <div>
                         {photos.map((photo, index) => {
+                            let color = (photo.liked_by.includes(this.props.user._id) ?
+                                { backgroundColor: "grey" , color: 'orangered'}:
+                                { backgroundColor: "grey" , color: "black"});
                             return (
                                 <div key={index}>
                                     <div className="borderBox">
@@ -82,6 +108,13 @@ class UserPhotos extends React.Component {
                                         </div>
                                         <img src={"../../images/" + photo.file_name}
                                              alt={`User ${this.props.match.params.userId}`}/>
+                                        <Fab size="small" aria-label="like" variant={"extended"}
+                                             onClick={() => this.handleLikes(photo._id, photo.liked_by.includes(this.props.user._id))}
+                                             style = {color}
+                                        >
+                                            <ThumbUpIcon/>
+                                            {"   "+photo.liked_by.length}
+                                        </Fab>
                                     </div>
                                     {photo.comments.map((comment, index2) => (
                                             <div

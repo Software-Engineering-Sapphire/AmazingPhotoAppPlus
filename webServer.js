@@ -277,7 +277,21 @@ app.get("/photosOfUser/:id", function (request, response) {
                 "comments.user.occupation": 0,
                 "comments.user.__v": 0
             }
-        }], function (err, photos) {
+        }, {
+            $addFields: {
+                liked_count: {
+                    $size: {
+                        "$ifNull": ["$liked_by", []]
+                    }
+                }
+            }
+        },{
+            $sort: {
+            liked_count: -1,
+                date_Time: -1
+        }
+    }
+    ], function (err, photos) {
             if (err) {
                 console.error("Error in /photosOfUser/:id", err);
                 response.status(500)
@@ -593,7 +607,47 @@ app.get("/activity", (request, response) => {
         response.status(401).json({message: "No User Logged In"});
     }
 });
+app.post("/like/:photo_id", (request, response) => {
+    if (request.session.login_name) {
+        const id = new mongoose.Types.ObjectId(request.params.photo_id);
 
+        Photo.findById({
+            _id: id
+        }).then((photo) => {
+            photo.liked_by.push(request.session.user_id);
+            photo.save((err) => {
+                if (err) {
+                    console.error('/like/:photo_id', err);
+                    response.status(400).json({message: "Failed to Like Photo"});
+                    return;
+                }
+                response.status(200).json({message: "Photo Liked"});
+            });
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
+
+app.delete("/like/:photo_id", (request, response) => {
+    if (request.session.login_name) {
+        const id = new mongoose.Types.ObjectId(request.params.photo_id);
+        Photo.findById({
+            _id: id
+        }).then((photo) => {
+            photo.liked_by = photo.liked_by.filter(item => item.toString() !== request.session.user_id.toString());
+            photo.save((err) => {
+                if (err) {
+                    response.status(404).json({message: "Failed to Like Photo"});
+                    return;
+                }
+                response.status(204).send();
+            });
+        });
+    } else {
+        response.status(401).json({message: "No User Logged In"});
+    }
+});
 const server = app.listen(3000, function () {
     const port = server.address().port;
     console.log("Listening at http://localhost:" + port + " exporting the directory " + __dirname);
