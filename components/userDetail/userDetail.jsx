@@ -96,20 +96,17 @@ class UserDetail extends React.Component {
                         <div className="flex-row">
                             {
                                 (photos !== null) ?
-                                    photos.map(
-                                        (photo, index) => {
-                                            return (
-                                                <div className={"flex-item"} key={index}>
-                                                    <img className="thumbnail"
-                                                         src={"../../images/" + photo.file_name}
-                                                    />
-                                                </div>
-                                            );
-                                        }
-                                    ) : <div></div>
-
+                                    photos
+                                        .sort((a, b) => b.date_time - a.date_time)
+                                        .map((photo, index) => (
+                                            <div className={"flex-item"} key={index}>
+                                                <img className="thumbnail" src={"../../images/" + photo.file_name} />
+                                            </div>
+                                        ))
+                                    : <div></div>
                             }
                         </div>
+
 
                     </div>
                 </div>
