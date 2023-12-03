@@ -78,16 +78,20 @@ class UserDetail extends React.Component {
                                 (photos !== null) ?
                                     (() => {
                                         const sortedPhotos = photos
-                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time
-                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order
+                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time property
+                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order of date_time
 
                                         if (sortedPhotos.length > 0) {
-                                            const firstPhoto = sortedPhotos[0];
+                                            const mostRecentPhoto = sortedPhotos[0];
+                                            const photoUrl = `../../images/${mostRecentPhoto.file_name}`;
+                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
+
                                             return (
                                                 <div className={"flex-item"}>
-                                                    <img className="thumbnail" src={"../../images/" + firstPhoto.file_name} />
-                                                    <p>Date: {firstPhoto.date_time}</p>
-
+                                                    <a href={userPhotosUrl}>
+                                                        <img className="thumbnail" src={photoUrl} />
+                                                        <p>Date Time: {mostRecentPhoto.date_time}</p>
+                                                    </a>
                                                 </div>
                                             );
                                         } else {
@@ -110,10 +114,15 @@ class UserDetail extends React.Component {
 
                                         if (sortedPhotos.length > 0) {
                                             const photoWithMostComments = sortedPhotos[0];
+                                            const photoUrl = `../../images/${photoWithMostComments.file_name}`;
+                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
+
                                             return (
                                                 <div className={"flex-item"}>
-                                                    <img className="thumbnail" src={"../../images/" + photoWithMostComments.file_name} />
-                                                    <p>Number of Comments: {photoWithMostComments.comments.length}</p>
+                                                    <a href={userPhotosUrl}>
+                                                        <img className="thumbnail" src={photoUrl} />
+                                                        <p>Number of Comments: {photoWithMostComments.comments.length}</p>
+                                                    </a>
                                                 </div>
                                             );
                                         } else {
@@ -123,7 +132,6 @@ class UserDetail extends React.Component {
                                     : <div></div>
                             }
                         </div>
-
                     </div>
                 </div>
 
