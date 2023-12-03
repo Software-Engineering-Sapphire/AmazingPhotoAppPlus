@@ -49,7 +49,11 @@ class UserDetail extends React.Component {
         } else {
             return (
                 <div>
-                    g ng
+                    <div key="userPhotosBtn">
+                        <Button variant="contained" href={`#/photos/${this.props.match.params.userId}`}>
+                            User Photos
+                        </Button>
+                    </div>
                     <div className="borderBox">
                         <Typography variant="body1">
                             User ID: {this.state.user._id}
