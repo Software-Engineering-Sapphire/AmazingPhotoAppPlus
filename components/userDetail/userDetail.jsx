@@ -83,6 +83,7 @@ class UserDetail extends React.Component {
                                                 <div className={"flex-item"}>
                                                     <img className="thumbnail" src={"../../images/" + firstPhoto.file_name} />
                                                     <p>Date: {firstPhoto.date_time}</p>
+
                                                 </div>
                                             );
                                         } else {
