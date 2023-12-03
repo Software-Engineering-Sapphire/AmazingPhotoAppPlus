@@ -49,11 +49,7 @@ class UserDetail extends React.Component {
         } else {
             return (
                 <div>
-                    <div key="userPhotosBtn">
-                        <Button variant="contained" href={`#/photos/${this.props.match.params.userId}`}>
-                            User Photos
-                        </Button>
-                    </div>
+                    g ng
                     <div className="borderBox">
                         <Typography variant="body1">
                             User ID: {this.state.user._id}
@@ -76,18 +72,24 @@ class UserDetail extends React.Component {
                         <div className="flex-row">
                             {
                                 (photos !== null) ?
-                                photos.map(
-                                    (photo, index) => {
-                                        return (
-                                            <div className={"flex-item"} key={index}>
-                                                <img className="thumbnail"
-                                                     src={"../../images/" + photo.file_name}
-                                                     />
-                                            </div>
-                                        );
-                                    }
-                                ) : <div></div>
+                                    (() => {
+                                        const sortedPhotos = photos
+                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time
+                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order
 
+                                        if (sortedPhotos.length > 0) {
+                                            const firstPhoto = sortedPhotos[0];
+                                            return (
+                                                <div className={"flex-item"}>
+                                                    <img className="thumbnail" src={"../../images/" + firstPhoto.file_name} />
+                                                    <p>Date: {firstPhoto.date_time}</p>
+                                                </div>
+                                            );
+                                        } else {
+                                            return <div></div>;
+                                        }
+                                    })()
+                                    : <div></div>
                             }
                         </div>
                         <Typography variant="body1">
@@ -96,17 +98,26 @@ class UserDetail extends React.Component {
                         <div className="flex-row">
                             {
                                 (photos !== null) ?
-                                    photos
-                                        .sort((a, b) => b.date_time - a.date_time)
-                                        .map((photo, index) => (
-                                            <div className={"flex-item"} key={index}>
-                                                <img className="thumbnail" src={"../../images/" + photo.file_name} />
-                                            </div>
-                                        ))
+                                    (() => {
+                                        const sortedPhotos = photos
+                                            .filter(photo => photo.comments) // Ensure each photo has a comments property
+                                            .sort((a, b) => b.comments.length - a.comments.length); // Sort in descending order of comments
+
+                                        if (sortedPhotos.length > 0) {
+                                            const photoWithMostComments = sortedPhotos[0];
+                                            return (
+                                                <div className={"flex-item"}>
+                                                    <img className="thumbnail" src={"../../images/" + photoWithMostComments.file_name} />
+                                                    <p>Number of Comments: {photoWithMostComments.comments.length}</p>
+                                                </div>
+                                            );
+                                        } else {
+                                            return <div></div>;
+                                        }
+                                    })()
                                     : <div></div>
                             }
                         </div>
-
 
                     </div>
                 </div>
