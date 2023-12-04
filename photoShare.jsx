@@ -77,7 +77,7 @@ class PhotoShare extends React.Component {
                                         <Fab size="small" aria-label="like" variant="extended" color="primary"
                                              href={'#/favorites'}>
                                             <FavoriteIcon sx={{marginRight: "10px"}}/>
-                                            {"Your Favorites"}
+                                            {"Favorites"}
                                         </Fab>
                                         <Fab size="small" variant="extended" href={'#/activity'}>
                                             <TrendingUpIcon/>

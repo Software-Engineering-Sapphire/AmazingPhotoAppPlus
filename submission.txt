@@ -40,3 +40,17 @@ app from a new machine):
 * your app from a new machine):
 * None
 ************************************ Example ***********************************
+
+************************************ Form **************************************
+
+Story number and name:  6 - Photo like votes
+Story points:   4
+Brief description to see the story in action:   Navigate to someone's photos page. To like a photo, press the thumbs up button on the bottom left of the photo. The photo with the most likes will move to the top of the user's photos page.
+
+Story number and name:  7 - Favorite lists of photos for users
+Story points:   6
+Brief description to see the story in action:   Navigate to someone's photos page. To favorite a photo, press the heart button on the top right of the photo. To view your favorited photos, click on the "favorites" button on the left.
+
+Story number and name:  4 - Activity Feed
+Story points:   4
+Brief description to see the story in action:   Once you have posted a photo and comment, click on the "activity" button on the left.
