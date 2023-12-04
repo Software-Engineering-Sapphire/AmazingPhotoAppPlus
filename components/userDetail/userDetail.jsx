@@ -1,13 +1,16 @@
 import React from 'react';
-import {Button, Typography} from '@mui/material';
+import {Button, Modal, Typography} from '@mui/material';
 import './userDetail.css';
 import axios from 'axios';
+import {Link} from "react-router-dom";
+import RemoveCircleOutlineSharpIcon from "@mui/icons-material/RemoveCircleOutlineSharp";
 
 class UserDetail extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: null
+            user: null,
+            photos: null
         };
     }
 
@@ -23,6 +26,13 @@ class UserDetail extends React.Component {
             .catch((err) => {
                 console.error(err);
             });
+        axios.get('/photosOfUser/' + this.props.match.params.userId)
+            .then(returnedObject => {
+                this.setState({photos: returnedObject.data});
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     }
 
     componentDidUpdate(prevProps) {
@@ -30,7 +40,10 @@ class UserDetail extends React.Component {
             this.fetchDataFromAPI();
         }
     }
+
+
     render() {
+        const {photos} = this.state;
         if (this.state.user === null) {
             return <Typography>Loading...</Typography>;
         } else {
@@ -57,6 +70,68 @@ class UserDetail extends React.Component {
                         <Typography variant="body1">
                             Occupation: {this.state.user.occupation}
                         </Typography>
+                        <Typography variant="body1">
+                            Most Recently Uploaded Photo:
+                        </Typography>
+                        <div className="flex-row">
+                            {
+                                (photos !== null) ?
+                                    (() => {
+                                        const sortedPhotos = photos
+                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time property
+                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order of date_time
+
+                                        if (sortedPhotos.length > 0) {
+                                            const mostRecentPhoto = sortedPhotos[0];
+                                            const photoUrl = `../../images/${mostRecentPhoto.file_name}`;
+                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
+
+                                            return (
+                                                <div className={"flex-item"}>
+                                                    <a href={userPhotosUrl}>
+                                                        <img className="thumbnail" src={photoUrl} />
+                                                        <p>Date Time: {mostRecentPhoto.date_time}</p>
+                                                    </a>
+                                                </div>
+                                            );
+                                        } else {
+                                            return <div></div>;
+                                        }
+                                    })()
+                                    : <div></div>
+                            }
+                        </div>
+                        <Typography variant="body1">
+                            Most Commented Photo:
+                        </Typography>
+                        <div className="flex-row">
+                            {
+                                (photos !== null) ?
+                                    (() => {
+                                        const sortedPhotos = photos
+                                            .filter(photo => photo.comments) // Ensure each photo has a comments property
+                                            .sort((a, b) => b.comments.length - a.comments.length); // Sort in descending order of comments
+
+                                        if (sortedPhotos.length > 0) {
+                                            const photoWithMostComments = sortedPhotos[0];
+                                            const photoUrl = `../../images/${photoWithMostComments.file_name}`;
+                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
+
+                                            return (
+                                                <div className={"flex-item"}>
+                                                    <a href={userPhotosUrl}>
+                                                        <img className="thumbnail" src={photoUrl} />
+                                                        <p>Number of Comments: {photoWithMostComments.comments.length}</p>
+                                                    </a>
+                                                </div>
+                                            );
+                                        } else {
+                                            return <div></div>;
+                                        }
+                                    })()
+                                    : <div></div>
+                            }
+                        </div>
                     </div>
                 </div>
 
