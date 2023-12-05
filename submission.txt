@@ -54,3 +54,13 @@ Brief description to see the story in action:   Navigate to someone's photos pag
 Story number and name:  4 - Activity Feed
 Story points:   4
 Brief description to see the story in action:   Once you have posted a photo and comment, click on the "activity" button on the left.
+
+Marketing Video URL (ensure permissions are set to public viewing):
+N/A - Completed in class.
+
+Is it OK if we post your Marketing Video URL on the class discussion forum?
+N/A
+
+Any special instructions for grading (it should be easy for someone to run your
+app from a new machine):
+
