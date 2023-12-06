@@ -1,16 +1,15 @@
 import React from 'react';
-import {Button, Modal, Typography} from '@mui/material';
-import './userDetail.css';
+import { Button, Typography } from '@mui/material';
 import axios from 'axios';
-import {Link} from "react-router-dom";
-import RemoveCircleOutlineSharpIcon from "@mui/icons-material/RemoveCircleOutlineSharp";
+import RemoveCircleOutlineSharpIcon from '@mui/icons-material/RemoveCircleOutlineSharp';
 
 class UserDetail extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
             user: null,
-            photos: null
+            mostRecentPhoto: null,
+            mostCommentedPhoto: null,
         };
     }
 
@@ -21,14 +20,27 @@ class UserDetail extends React.Component {
     fetchDataFromAPI() {
         axios.get('/user/' + this.props.match.params.userId)
             .then(returnedObject => {
-                this.setState({user: returnedObject.data});
+                this.setState({ user: returnedObject.data });
             })
             .catch((err) => {
                 console.error(err);
             });
-        axios.get('/photosOfUser/' + this.props.match.params.userId)
+
+        // Fetch the most recent photo
+        axios.get('/recentPhotoOfUser/' + this.props.match.params.userId)
             .then(returnedObject => {
-                this.setState({photos: returnedObject.data});
+                const mostRecentPhoto = returnedObject.data[0]; // Assuming the endpoint returns a single photo
+                this.setState({ mostRecentPhoto });
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+
+        // Fetch the most commented photo
+        axios.get('/mostCommentedPhotoOfUser/' + this.props.match.params.userId)
+            .then(returnedObject => {
+                const mostCommentedPhoto = returnedObject.data[0]; // Assuming the endpoint returns a single photo
+                this.setState({ mostCommentedPhoto });
             })
             .catch((err) => {
                 console.error(err);
@@ -41,9 +53,9 @@ class UserDetail extends React.Component {
         }
     }
 
-
     render() {
-        const {photos} = this.state;
+        const { mostRecentPhoto, mostCommentedPhoto } = this.state;
+
         if (this.state.user === null) {
             return <Typography>Loading...</Typography>;
         } else {
@@ -75,29 +87,13 @@ class UserDetail extends React.Component {
                         </Typography>
                         <div className="flex-row">
                             {
-                                (photos !== null) ?
-                                    (() => {
-                                        const sortedPhotos = photos
-                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time property
-                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order of date_time
-
-                                        if (sortedPhotos.length > 0) {
-                                            const mostRecentPhoto = sortedPhotos[0];
-                                            const photoUrl = `../../images/${mostRecentPhoto.file_name}`;
-                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
-
-                                            return (
-                                                <div className={"flex-item"}>
-                                                    <a href={userPhotosUrl}>
-                                                        <img className="thumbnail" src={photoUrl} />
-                                                        <p>Date Time: {mostRecentPhoto.date_time}</p>
-                                                    </a>
-                                                </div>
-                                            );
-                                        } else {
-                                            return <div></div>;
-                                        }
-                                    })()
+                                (mostRecentPhoto !== null) ?
+                                    <div className={"flex-item"}>
+                                        <a href={`#/photos/${this.props.match.params.userId}`}>
+                                            <img className="thumbnail" src={`../../images/${mostRecentPhoto.file_name}`} alt="Recent" />
+                                            <p>Date Time: {mostRecentPhoto.date_time}</p>
+                                        </a>
+                                    </div>
                                     : <div></div>
                             }
                         </div>
@@ -106,35 +102,18 @@ class UserDetail extends React.Component {
                         </Typography>
                         <div className="flex-row">
                             {
-                                (photos !== null) ?
-                                    (() => {
-                                        const sortedPhotos = photos
-                                            .filter(photo => photo.comments) // Ensure each photo has a comments property
-                                            .sort((a, b) => b.comments.length - a.comments.length); // Sort in descending order of comments
-
-                                        if (sortedPhotos.length > 0) {
-                                            const photoWithMostComments = sortedPhotos[0];
-                                            const photoUrl = `../../images/${photoWithMostComments.file_name}`;
-                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
-
-                                            return (
-                                                <div className={"flex-item"}>
-                                                    <a href={userPhotosUrl}>
-                                                        <img className="thumbnail" src={photoUrl} />
-                                                        <p>Number of Comments: {photoWithMostComments.comments.length}</p>
-                                                    </a>
-                                                </div>
-                                            );
-                                        } else {
-                                            return <div></div>;
-                                        }
-                                    })()
+                                (mostCommentedPhoto !== null) ?
+                                    <div className={"flex-item"}>
+                                        <a href={`#/photos/${this.props.match.params.userId}`}>
+                                            <img className="thumbnail" src={`../../images/${mostCommentedPhoto.file_name}`} alt="Commented" />
+                                            <p>Number of Comments: {mostCommentedPhoto.comments.length}</p>
+                                        </a>
+                                    </div>
                                     : <div></div>
                             }
                         </div>
                     </div>
                 </div>
-
             );
         }
     }
