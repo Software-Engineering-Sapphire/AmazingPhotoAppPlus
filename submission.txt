@@ -63,4 +63,9 @@ N/A
 
 Any special instructions for grading (it should be easy for someone to run your
 app from a new machine):
+1) Pull ENTIRE repo.
+2) Run npm install in project directory.
+3) Run loadDatabase.js
+3) Run build
+4) Run webServer.js
 
