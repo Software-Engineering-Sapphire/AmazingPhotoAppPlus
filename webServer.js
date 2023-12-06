@@ -281,7 +281,7 @@ app.get("/photosOfUser/:id", function (request, response) {
             $addFields: {
                 liked_count: {
                     $size: {
-                        "$ifNull": ["$liked_by", []]
+                        $ifNull: ["$liked_by", []]
                     }
                 }
             }
@@ -387,6 +387,7 @@ app.get("/recentPhotoOfUser/:id", function (request, response) {
     }
 });
 // Route for the most commented photo
+// Route for the most commented photo
 app.get("/mostCommentedPhotoOfUser/:id", function (request, response) {
     if (request.session.login_name) {
         const id = request.params.id;
@@ -418,30 +419,35 @@ app.get("/mostCommentedPhotoOfUser/:id", function (request, response) {
             {
                 $lookup: {
                     from: "users",
-                    localField: "photos.comments.user_id",
+                    localField: "photo.comments.user_id",
                     foreignField: "_id",
-                    as: "users"
+                    as: "commentUsers"
                 }
             },
             {
                 $addFields: {
-                    photo: {
-                        $mergeObjects: ["$photo", {
-                            comments: {
-                                $map: {
-                                    input: "$photo.comments",
-                                    in: {
-                                        $mergeObjects: ["$$this", {
-                                            user: {
-                                                $arrayElemAt: ["$users", {
-                                                    $indexOfArray: ["$users._id", "$$this.user_id"]
-                                                }]
-                                            }
-                                        }]
+                    "photo.comments": {
+                        $map: {
+                            input: "$photo.comments",
+                            in: {
+                                $mergeObjects: [
+                                    "$$this",
+                                    {
+                                        user: {
+                                            $arrayElemAt: [
+                                                "$commentUsers",
+                                                {
+                                                    $indexOfArray: [
+                                                        "$commentUsers._id",
+                                                        "$$this.user_id"
+                                                    ]
+                                                }
+                                            ]
+                                        }
                                     }
-                                }
+                                ]
                             }
-                        }]
+                        }
                     }
                 }
             },
@@ -457,7 +463,7 @@ app.get("/mostCommentedPhotoOfUser/:id", function (request, response) {
                     "photo.comments.user.description": 0,
                     "photo.comments.user.occupation": 0,
                     "photo.comments.user.__v": 0,
-                    "photo.users": 0
+                    "commentUsers": 0
                 }
             }
         ], function (err, photos) {
@@ -476,6 +482,7 @@ app.get("/mostCommentedPhotoOfUser/:id", function (request, response) {
         response.status(401).send();
     }
 });
+
 
 /**
  * URL /commentsOfUser/:id - Returns the Comments for User (id).
