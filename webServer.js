@@ -281,7 +281,7 @@ app.get("/photosOfUser/:id", function (request, response) {
             $addFields: {
                 liked_count: {
                     $size: {
-                        "$ifNull": ["$liked_by", []]
+                        $ifNull: ["$liked_by", []]
                     }
                 }
             }
@@ -310,6 +310,151 @@ app.get("/photosOfUser/:id", function (request, response) {
     }
 });
 
+app.get("/mostCommentedPhoto/:id", function (request, response) {
+    if (request.session.login_name) {
+        const id = request.params.id;
+        let mongoTargetObj;
+        try {
+            mongoTargetObj = new mongoose.Types.ObjectId(id);
+        } catch (e) {
+            response.status(400).send();
+        }
+
+        Photo.aggregate([{
+            $match: {user_id: {$eq: mongoTargetObj}}
+        }, {
+            $addFields: {
+                comments: {$ifNull: ["$comments", []]}
+            }
+        }, {
+            $lookup: {
+                from: "users", localField: "comments.user_id", foreignField: "_id", as: "users"
+            }
+        }, {
+            $addFields: {
+                comments: {
+                    $map: {
+                        input: "$comments",
+                        in: {
+                            $mergeObjects: ["$$this", {
+                                user: {
+                                    $arrayElemAt: ["$users", {
+                                        $indexOfArray: ["$users._id", "$$this.user_id"]
+                                    }]
+                                }
+                            }]
+                        }
+                    }
+                }
+            }
+        }, {
+            $project: {
+                users: 0,
+                __v: 0,
+                "comments.__v": 0,
+                "comments.user_id": 0,
+                "comments.user.login_name": 0,
+                "comments.user.password": 0,
+                "comments.user.location": 0,
+                "comments.user.description": 0,
+                "comments.user.occupation": 0,
+                "comments.user.__v": 0
+            }
+        }], function (err, photos) {
+            if (err) {
+                console.error("Error in /photosOfUser/:id", err);
+                response.status(500)
+                    .send(JSON.stringify(err));
+                return;
+            }
+            if (photos.length === 0) {
+                response.status(400)
+                    .send();
+                return;
+            }
+            response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).send();
+    }
+});
+
+app.get("/recentPhotoOfUser/:id", function (request, response) {
+    if (request.session.login_name) {
+        const id = request.params.id;
+        let mongoTargetObj;
+        try {
+            mongoTargetObj = new mongoose.Types.ObjectId(id);
+        } catch (e) {
+            response.status(400).send();
+            return;
+        }
+
+        Photo.aggregate([
+            { $match: { user_id: mongoTargetObj } },
+            { $sort: { date_time: -1 } }, // Sort by date_time in descending order
+            { $limit: 1 }, // Limit to the most recent photo
+            {
+                $addFields: {
+                    comments: { $ifNull: ["$comments", []] }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "comments.user_id",
+                    foreignField: "_id",
+                    as: "users"
+                }
+            },
+            {
+                $addFields: {
+                    comments: {
+                        $map: {
+                            input: "$comments",
+                            in: {
+                                $mergeObjects: ["$$this", {
+                                    user: {
+                                        $arrayElemAt: ["$users", {
+                                            $indexOfArray: ["$users._id", "$$this.user_id"]
+                                        }]
+                                    }
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    users: 0,
+                    __v: 0,
+                    "comments.__v": 0,
+                    "comments.user_id": 0,
+                    "comments.user.login_name": 0,
+                    "comments.user.password": 0,
+                    "comments.user.location": 0,
+                    "comments.user.description": 0,
+                    "comments.user.occupation": 0,
+                    "comments.user.__v": 0
+                }
+            }
+        ], function (err, photos) {
+            if (err) {
+                console.error("Error in /recentPhotoOfUser/:id", err);
+                response.status(500).send(JSON.stringify(err));
+                return;
+            }
+            if (photos.length === 0) {
+                response.status(400).send();
+                return;
+            }
+            response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).send();
+    }
+});
 /**
  * URL /commentsOfUser/:id - Returns the Comments for User (id).
  */

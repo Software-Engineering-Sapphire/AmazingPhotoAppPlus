@@ -1,9 +1,7 @@
 import React from 'react';
-import {Button, Modal, Typography} from '@mui/material';
+import {Button, Typography} from '@mui/material';
 import './userDetail.css';
 import axios from 'axios';
-import {Link} from "react-router-dom";
-import RemoveCircleOutlineSharpIcon from "@mui/icons-material/RemoveCircleOutlineSharp";
 
 class UserDetail extends React.Component {
     constructor(props) {
