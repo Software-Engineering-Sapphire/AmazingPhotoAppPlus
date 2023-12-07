@@ -295,6 +295,162 @@ app.get("/photosOfUser/:id", function (request, response) {
         response.status(401).send();
     }
 });
+// Route for the most recently uploaded photo
+app.get("/recentPhotoOfUser/:id", function (request, response) {
+    if (request.session.login_name) {
+        const id = request.params.id;
+        let mongoTargetObj;
+        try {
+            mongoTargetObj = new mongoose.Types.ObjectId(id);
+        } catch (e) {
+            response.status(400).send();
+            return;
+        }
+
+        Photo.aggregate([
+            { $match: { user_id: mongoTargetObj } },
+            { $sort: { date_time: -1 } }, // Sort by date_time in descending order
+            { $limit: 1 }, // Limit to the most recent photo
+            {
+                $addFields: {
+                    comments: { $ifNull: ["$comments", []] }
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "comments.user_id",
+                    foreignField: "_id",
+                    as: "users"
+                }
+            },
+            {
+                $addFields: {
+                    comments: {
+                        $map: {
+                            input: "$comments",
+                            in: {
+                                $mergeObjects: ["$$this", {
+                                    user: {
+                                        $arrayElemAt: ["$users", {
+                                            $indexOfArray: ["$users._id", "$$this.user_id"]
+                                        }]
+                                    }
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    users: 0,
+                    __v: 0,
+                    "comments.__v": 0,
+                    "comments.user_id": 0,
+                    "comments.user.login_name": 0,
+                    "comments.user.password": 0,
+                    "comments.user.location": 0,
+                    "comments.user.description": 0,
+                    "comments.user.occupation": 0,
+                    "comments.user.__v": 0
+                }
+            }
+        ], function (err, photos) {
+            if (err) {
+                console.error("Error in /recentPhotoOfUser/:id", err);
+                response.status(500).send(JSON.stringify(err));
+                return;
+            }
+            if (photos.length === 0) {
+                response.status(400).send();
+                return;
+            }
+            response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).send();
+    }
+});
+
+// Route for the most commented photo
+app.get("/mostCommentedPhotoOfUser/:id", function (request, response) {
+    if (request.session.login_name) {
+        const id = request.params.id;
+        let mongoTargetObj;
+        try {
+            mongoTargetObj = new mongoose.Types.ObjectId(id);
+        } catch (e) {
+            response.status(400).send();
+            return;
+        }
+
+        Photo.aggregate([
+            { $match: { user_id: mongoTargetObj } },
+            {
+                $addFields: {
+                    comments: { $ifNull: ["$comments", []] }
+                }
+            },
+            { $unwind: "$comments" }, // Unwind the comments array
+            {
+                $group: {
+                    _id: "$_id",
+                    photo: { $first: "$$ROOT" }, // Keep the original photo document
+                    commentCount: { $sum: 1 } // Count the number of comments
+                }
+            },
+            { $sort: { commentCount: -1 } }, // Sort by commentCount in descending order
+            { $limit: 1 }, // Limit to the most commented photo
+            {
+                $addFields: {
+                    comments: {
+                        $map: {
+                            input: "$photo.comments",
+                            in: {
+                                $mergeObjects: ["$$this", {
+                                    user: {
+                                        $arrayElemAt: ["$photo.users", {
+                                            $indexOfArray: ["$photo.users._id", "$$this.user_id"]
+                                        }]
+                                    }
+                                }]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    "photo.__v": 0,
+                    "photo.comments.__v": 0,
+                    "photo.comments.user_id": 0,
+                    "photo.comments.user.login_name": 0,
+                    "photo.comments.user.password": 0,
+                    "photo.comments.user.location": 0,
+                    "photo.comments.user.description": 0,
+                    "photo.comments.user.occupation": 0,
+                    "photo.comments.user.__v": 0,
+                    "photo.users": 0
+                }
+            }
+        ], function (err, photos) {
+            if (err) {
+                console.error("Error in /mostCommentedPhotoOfUser/:id", err);
+                response.status(500).send(JSON.stringify(err));
+                return;
+            }
+            if (photos.length === 0) {
+                response.status(400).send();
+                return;
+            }
+            response.end(JSON.stringify(photos));
+        });
+    } else {
+        response.status(401).send();
+    }
+});
 
 /**
  * URL /commentsOfUser/:id - Returns the Comments for User (id).
