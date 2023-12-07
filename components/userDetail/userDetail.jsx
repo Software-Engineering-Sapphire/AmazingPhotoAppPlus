@@ -75,29 +75,13 @@ class UserDetail extends React.Component {
                         </Typography>
                         <div className="flex-row">
                             {
-                                (photos !== null) ?
-                                    (() => {
-                                        const sortedPhotos = photos
-                                            .filter(photo => photo.date_time) // Ensure each photo has a date_time property
-                                            .sort((a, b) => new Date(b.date_time) - new Date(a.date_time)); // Sort in descending order of date_time
-
-                                        if (sortedPhotos.length > 0) {
-                                            const mostRecentPhoto = sortedPhotos[0];
-                                            const photoUrl = `../../images/${mostRecentPhoto.file_name}`;
-                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
-
-                                            return (
-                                                <div className={"flex-item"}>
-                                                    <a href={userPhotosUrl}>
-                                                        <img className="thumbnail" src={photoUrl} />
-                                                        <p>Date Time: {mostRecentPhoto.date_time}</p>
-                                                    </a>
-                                                </div>
-                                            );
-                                        } else {
-                                            return <div></div>;
-                                        }
-                                    })()
+                                (mostRecentPhoto !== null) ?
+                                    <div className={"flex-item"}>
+                                        <a href={`#/photos/${this.props.match.params.userId}`}>
+                                            <img className="thumbnail" src={`../../images/${mostRecentPhoto.file_name}`} alt="Recent" />
+                                            <p>Date Time: {mostRecentPhoto.date_time}</p>
+                                        </a>
+                                    </div>
                                     : <div></div>
                             }
                         </div>
