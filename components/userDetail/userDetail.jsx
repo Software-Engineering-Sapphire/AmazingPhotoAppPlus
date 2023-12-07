@@ -90,29 +90,13 @@ class UserDetail extends React.Component {
                         </Typography>
                         <div className="flex-row">
                             {
-                                (photos !== null) ?
-                                    (() => {
-                                        const sortedPhotos = photos
-                                            .filter(photo => photo.comments) // Ensure each photo has a comments property
-                                            .sort((a, b) => b.comments.length - a.comments.length); // Sort in descending order of comments
-
-                                        if (sortedPhotos.length > 0) {
-                                            const photoWithMostComments = sortedPhotos[0];
-                                            const photoUrl = `../../images/${photoWithMostComments.file_name}`;
-                                            const userPhotosUrl = `#/photos/${this.props.match.params.userId}`;
-
-                                            return (
-                                                <div className={"flex-item"}>
-                                                    <a href={userPhotosUrl}>
-                                                        <img className="thumbnail" src={photoUrl} />
-                                                        <p>Number of Comments: {photoWithMostComments.comments.length}</p>
-                                                    </a>
-                                                </div>
-                                            );
-                                        } else {
-                                            return <div></div>;
-                                        }
-                                    })()
+                                (mostCommentedPhoto !== null) ?
+                                    <div className={"flex-item"}>
+                                        <a href={`#/photos/${this.props.match.params.userId}`}>
+                                            <img className="thumbnail" src={`../../images/${mostCommentedPhoto.file_name}`} alt="Commented" />
+                                            <p>Number of Comments: {mostCommentedPhoto.comments.length}</p>
+                                        </a>
+                                    </div>
                                     : <div></div>
                             }
                         </div>
